@@ -3,39 +3,46 @@ import { View, StyleSheet, Text, ScrollView, ImageBackground } from 'react-nativ
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import { collection, getDocs } from 'firebase/firestore';
 import { Firebase_store } from './Firebase';
-import Carousel from './Carousel';
+// import Carousel from './Carousel'; // Uncomment if using Carousel component
+
+type PropertyData = {
+  id: string;
+  name?: string;
+  images?: string[];
+  collection: string;
+};
 
 export default function TryIt() {
-  const [images, setImages] = useState([]);
-  const [data, setData] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [images, setImages] = useState<string[]>([]);
+  const [data, setData] = useState<PropertyData[]>([]);
+  const [searchTerm, setSearchTerm] = useState<string>('');
 
   useEffect(() => {
     const fetchImages = async () => {
       try {
-        const collectionRef = collection(Firebase_store, 'rental'); // Adjust the collection name as needed
+        const collectionRef = collection(Firebase_store, 'rental');
         const querySnapshot = await getDocs(collectionRef);
 
-        const fetchedImages = querySnapshot.docs.flatMap(
+        const fetchedImages: string[] = querySnapshot.docs.flatMap(
           doc => doc.data().images || [],
-        ); // Flatten and get images arrays
+        );
 
         const collections = ['resale', 'rental', 'builder', 'commercial'];
-        const promises = collections.map(async collectionName => {
+        const promises = collections.map(async (collectionName) => {
           const collectionRef = collection(Firebase_store, collectionName);
           const querySnapshot = await getDocs(collectionRef);
-          return querySnapshot.docs.map(doc => ({
+          return querySnapshot.docs.map((doc) => ({
             id: doc.id,
             ...doc.data(),
             collection: collectionName,
-          }));
+          })) as PropertyData[];
         });
 
         const results = await Promise.all(promises);
         const allData = results.flat();
 
         setImages(fetchedImages);
-        setData(allData); // Set the fetched data to state
+        setData(allData);
       } catch (error) {
         console.error('Error fetching images: ', error);
       }
@@ -44,16 +51,13 @@ export default function TryIt() {
     fetchImages();
   }, []);
 
-  // Define a default image URL
   const defaultImageUrl = 'https://firebasestorage.googleapis.com/v0/b/harshalhousing.appspot.com/o/rentalImages%2FrentalImg_image_1718195248734_0?alt=media&token=db660b4a-a701-4eae-8d48-0c40c5dddd48';
 
-  // Function to get data for a specific collection
-  const getDataForCollection = (collectionName) => {
+  const getDataForCollection = (collectionName: string) => {
     return data.filter(item => item.collection === collectionName);
   };
 
-  // Display only one form's data at a time
-  const collectionName = 'rental'; // Adjust this to the desired collection name
+  const collectionName = 'rental';
   const currentCollectionData = getDataForCollection(collectionName);
 
   return (
@@ -66,12 +70,11 @@ export default function TryIt() {
           {currentCollectionData.map(item => (
             <View key={item.id}>
               <ImageBackground
-                source={{ uri: item.image || defaultImageUrl }} // Use item's image or default image URL
+                source={{ uri: item.images && item.images[0] ? item.images[0] : defaultImageUrl }}
                 style={styles.image}
                 resizeMode="cover">
-                  
                 <View style={styles.overlay}>
-                  <Text style={styles.name}>{item.name}</Text>
+                  <Text style={styles.name}>{item.name || 'Unknown Name'}</Text>
                   <Text style={styles.collection}>{item.collection}</Text>
                 </View>
               </ImageBackground>
@@ -85,8 +88,8 @@ export default function TryIt() {
 
 const styles = StyleSheet.create({
   container: {
-    height: hp('30'),
-    width: wp('100'),
+    height: hp('30%'),
+    width: wp('100%'),
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     overflow: 'hidden',
@@ -95,8 +98,8 @@ const styles = StyleSheet.create({
     paddingLeft: 10,
   },
   image: {
-    height: hp('20'),
-    width: wp('90'),
+    height: hp('20%'),
+    width: wp('90%'),
     marginBottom: 10,
   },
   overlay: {

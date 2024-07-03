@@ -17,7 +17,6 @@ export default function NavbarSection() {
         <View style={styles.textWrapper}>
           <Text style={styles.myText}>Hi, Harshal</Text>
         </View>
-        
       </View>
         </ScrollView>
     </SafeAreaView>

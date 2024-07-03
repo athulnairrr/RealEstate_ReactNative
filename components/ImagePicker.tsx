@@ -1,14 +1,19 @@
 import React, { useState } from 'react';
 import { View, Button, Image, StyleSheet, Text, Alert, TouchableOpacity } from 'react-native';
-import { launchImageLibrary } from 'react-native-image-picker';
+import { launchImageLibrary, Asset } from 'react-native-image-picker';
 import { Firebase_storage, Firebase_store } from './Firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { collection, addDoc } from 'firebase/firestore';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, NavigationProp } from '@react-navigation/native';
+
+type ImageType = {
+  uri: string;
+  id: string;
+};
 
 export default function AddImageForm() {
-  const [images, setImages] = useState([]);
-  const navigation = useNavigation();
+  const [images, setImages] = useState<ImageType[]>([]);
+  const navigation = useNavigation<NavigationProp<any>>();
 
   const pickImage = () => {
     launchImageLibrary({ mediaType: 'photo' }, async (response) => {
@@ -16,13 +21,13 @@ export default function AddImageForm() {
         console.log('User cancelled image picker');
       } else if (response.errorCode) {
         console.log('ImagePicker Error: ', response.errorMessage);
-      } else {
+      } else if (response.assets && response.assets.length > 0) {
         const newImage: ImageType = {
-          uri: response.assets[0].uri,
-          id: Date.now().toString()
+          uri: response.assets[0]?.uri ?? '', // Ensure uri is not undefined
+          id: Date.now().toString(),
         };
         setImages([...images, newImage]);
-  
+
         try {
           const imageUrl = await uploadImage(newImage.uri, newImage.id);
           const rentalCollectionRef = collection(Firebase_store, 'rental');
@@ -38,7 +43,7 @@ export default function AddImageForm() {
     });
   };
 
-  const uploadImage = async (uri, imageName) => {
+  const uploadImage = async (uri: string, imageName: string): Promise<string> => {
     const response = await fetch(uri);
     const blob = await response.blob();
     const storageRef = ref(Firebase_storage, `images/${imageName}`);
@@ -47,7 +52,7 @@ export default function AddImageForm() {
   };
 
   const saveImages = async () => {
-    const uploadedImageUrls = [];
+    const uploadedImageUrls: { id: string; url: string }[] = [];
     for (const image of images) {
       const imageUrl = await uploadImage(image.uri, image.id);
       uploadedImageUrls.push({ id: image.id, url: imageUrl });
@@ -59,15 +64,15 @@ export default function AddImageForm() {
       });
       Alert.alert('Success', 'Images uploaded successfully!');
     } catch (error) {
-      Alert.alert('Error', error.message);
+      if (error instanceof Error) {
+        Alert.alert('Error', error.message);
+      }
     }
   };
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity
-        style={styles.button}
-        onPress={() => navigation.goBack()}>
+      <TouchableOpacity style={styles.button} onPress={() => navigation.goBack()}>
         <Text style={styles.text}>Back</Text>
       </TouchableOpacity>
       <Button title="Pick an image" onPress={pickImage} />
@@ -102,5 +107,8 @@ const styles = StyleSheet.create({
     height: 100,
     borderRadius: 10,
   },
+  text: {
+    fontSize: 16,
+    color: '#000',
+  },
 });
-

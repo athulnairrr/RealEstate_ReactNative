@@ -2,17 +2,16 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, ActivityIndicator, TouchableOpacity, Alert, KeyboardAvoidingView, ImageBackground } from 'react-native';
 import { Firebase_auth } from '../components/Firebase';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
-import { useNavigation } from '@react-navigation/native';
-import { CommonActions } from '@react-navigation/native';
+import { useNavigation, CommonActions } from '@react-navigation/native';
 
-export default function Login() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [isEmailFocused, setIsEmailFocused] = useState(false);
-  const [isPasswordFocused, setIsPasswordFocused] = useState(false);
+const Login: React.FC = () => {
+  const [email, setEmail] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
+  const [loading, setLoading] = useState<boolean>(false);
+  const [isEmailFocused, setIsEmailFocused] = useState<boolean>(false);
+  const [isPasswordFocused, setIsPasswordFocused] = useState<boolean>(false);
   const auth = Firebase_auth;
-  const navigation = useNavigation(); // Obtain navigation object
+  const navigation = useNavigation();
 
   const handleEmailFocus = () => {
     setIsEmailFocused(true);
@@ -35,7 +34,6 @@ export default function Login() {
     try {
       const response = await signInWithEmailAndPassword(auth, email, password);
       console.log(response);
-      // Reset the navigation stack to have only the Home screen
       navigation.dispatch(
         CommonActions.reset({
           index: 0,
@@ -44,7 +42,7 @@ export default function Login() {
       );
     } catch (error) {
       console.log(error);
-      Alert.alert('Sign-in Failed: ' + error.message);
+      Alert.alert('Sign-in Failed: ' + (error as Error).message);
     } finally {
       setLoading(false);
     }
@@ -56,7 +54,6 @@ export default function Login() {
       const response = await createUserWithEmailAndPassword(auth, email, password);
       console.log(response);
       Alert.alert('Check your email');
-      // Reset the navigation stack to have only the Home screen
       navigation.dispatch(
         CommonActions.reset({
           index: 0,
@@ -65,7 +62,7 @@ export default function Login() {
       );
     } catch (error) {
       console.log(error);
-      Alert.alert('Sign-up Failed: ' + error.message);
+      Alert.alert('Sign-up Failed: ' + (error as Error).message);
     } finally {
       setLoading(false);
     }
@@ -77,44 +74,44 @@ export default function Login() {
     //   style={styles.backgroundImage}
     //   resizeMode="cover"
     // >
-      <View style={styles.container}>
-        <KeyboardAvoidingView behavior="padding">
-          <TextInput
-            value={email}
-            style={[styles.input, isEmailFocused && styles.inputFocused]}
-            placeholder="Email"
-            autoCapitalize="none"
-            onChangeText={(text) => setEmail(text)}
-            onFocus={handleEmailFocus}
-            onBlur={handleEmailBlur}
-          />
-          <TextInput
-            secureTextEntry={true}
-            value={password}
-            style={[styles.input, isPasswordFocused && styles.inputFocused]}
-            placeholder="Password"
-            autoCapitalize="none"
-            onChangeText={(text) => setPassword(text)}
-            onFocus={handlePasswordFocus}
-            onBlur={handlePasswordBlur}
-          />
-          {loading ? (
-            <ActivityIndicator size="large" color="#0000ff" />
-          ) : (
-            <View style = {styles.btnContainer}>
-              <TouchableOpacity style={styles.btn} onPress={signIn}>
-                <Text style={styles.btnText}>Login</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.btn} onPress={signUp}>
-                <Text style={styles.btnText}>Create Account</Text>
-              </TouchableOpacity>
-            </View>
-          )}
-        </KeyboardAvoidingView>
-      </View>
+    <View style={styles.container}>
+      <KeyboardAvoidingView behavior="padding">
+        <TextInput
+          value={email}
+          style={[styles.input, isEmailFocused && styles.inputFocused]}
+          placeholder="Email"
+          autoCapitalize="none"
+          onChangeText={(text) => setEmail(text)}
+          onFocus={handleEmailFocus}
+          onBlur={handleEmailBlur}
+        />
+        <TextInput
+          secureTextEntry={true}
+          value={password}
+          style={[styles.input, isPasswordFocused && styles.inputFocused]}
+          placeholder="Password"
+          autoCapitalize="none"
+          onChangeText={(text) => setPassword(text)}
+          onFocus={handlePasswordFocus}
+          onBlur={handlePasswordBlur}
+        />
+        {loading ? (
+          <ActivityIndicator size="large" color="#0000ff" />
+        ) : (
+          <View style={styles.btnContainer}>
+            <TouchableOpacity style={styles.btn} onPress={signIn}>
+              <Text style={styles.btnText}>Login</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.btn} onPress={signUp}>
+              <Text style={styles.btnText}>Create Account</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+      </KeyboardAvoidingView>
+    </View>
     // </ImageBackground>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -127,7 +124,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     alignItems: 'center',
     marginTop: 5,
-
   },
   btn: {
     width: '60%',
@@ -145,7 +141,6 @@ const styles = StyleSheet.create({
     fontSize: 17,
     letterSpacing: 3, // Adjust the value as needed
   },
-  
   input: {
     borderWidth: 1,
     borderRadius: 4,
@@ -165,6 +160,8 @@ const styles = StyleSheet.create({
     resizeMode: 'cover',
     position: 'absolute',
     width: '100%',
-    height: '100%'
+    height: '100%',
   },
 });
+
+export default Login;

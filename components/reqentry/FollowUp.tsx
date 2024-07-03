@@ -1,5 +1,4 @@
-import React from 'react';
-import {useState,} from 'react';
+import React, { useState } from 'react';
 import {
   StyleSheet,
   Text,
@@ -9,22 +8,27 @@ import {
   KeyboardAvoidingView,
   Platform,
   TextInput,
-  Button
+  Button,
+  Alert,
 } from 'react-native';
-import {useNavigation} from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
 } from 'react-native-responsive-screen';
-import {collection, addDoc, serverTimestamp} from 'firebase/firestore';
-import {Firebase_store} from '../Firebase';
-import { Alert } from 'react-native';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { Firebase_store } from '../Firebase';
 import { Dropdown } from 'react-native-element-dropdown';
-import {Calendar} from 'react-native-feather';
+import { Calendar } from 'react-native-feather';
 import DatePicker from 'react-native-date-picker';
 
+// Define the type for the Dropdown item
+interface DropdownItem {
+  label: string;
+  value: string;
+}
 
-const data = [
+const data: DropdownItem[] = [
   { label: '1 BHK', value: '1 BHK' },
   { label: '2 BHK', value: '2 BHK' },
   { label: '3 BHK', value: '3 BHK' },
@@ -35,41 +39,25 @@ const data = [
   { label: '8 BHK', value: '8 BHK' },
 ];
 
-
-export default function FollowUp() {
+const FollowUp: React.FC = () => {
   const navigation = useNavigation();
-  const [date, setDate] = useState(new Date());
-  const [open, setOpen] = useState(false);
-  const [name, setName] = useState('');
-  const [contact, setContact] = useState('');
-  const [priceAbove, setPriceAbove] = useState('');
-  const [priceBelow, setPriceBelow] = useState('');
-  const [propertyAddress, setPropertyAddress] = useState('');
-  const [CarpetBelow, setCarpetBelow] = useState('');
-  const [CarpetAbove, setCarpetAbove] = useState('');
-  const [amenities, setAmenities] = useState('');
-  const [paymentSchedule, setPaymentSchedule] = useState('');
-  const [additionalNotes, setAdditionalNotes] = useState('');
+  const [date, setDate] = useState<Date>(new Date());
+  const [open, setOpen] = useState<boolean>(false);
+  const [name, setName] = useState<string>('');
+  const [contact, setContact] = useState<string>('');
+  const [priceAbove, setPriceAbove] = useState<string>('');
+  const [priceBelow, setPriceBelow] = useState<string>('');
+  const [propertyAddress, setPropertyAddress] = useState<string>('');
+  const [carpetBelow, setCarpetBelow] = useState<string>('');
+  const [carpetAbove, setCarpetAbove] = useState<string>('');
+  const [amenities, setAmenities] = useState<string>('');
+  const [paymentSchedule, setPaymentSchedule] = useState<string>('');
+  const [additionalNotes, setAdditionalNotes] = useState<string>('');
+  const [value, setValue] = useState<string | null>(null);
   const timestamp = serverTimestamp();
-  const [value, setValue] = useState(null);
 
   const handleSubmit = async () => {
-    // if (
-    //   !date ||
-    //   !name ||
-    //   !contact ||
-    //   !configuration ||
-    //   !price ||
-    //   !propertyAddress ||
-    //   !parking ||
-    //   !carpet ||
-    //   !direction ||
-    //   !additionalNotes
-    // ) {
-    //   Alert.alert('Please fill in all fields or write "NA" if not applicable.');
-    //   return;
-    // }
-    const clientCollectionRef  = collection(Firebase_store, 'client');
+    const clientCollectionRef = collection(Firebase_store, 'client');
 
     const newProperty = {
       date: date || 'NA',
@@ -78,8 +66,8 @@ export default function FollowUp() {
       priceBelow: priceBelow || 'NA',
       priceAbove: priceAbove || 'NA',
       propertyAddress: propertyAddress || 'NA',
-      parking: CarpetAbove || 'NA',
-      carpet: CarpetBelow || 'NA',
+      carpetAbove: carpetAbove || 'NA',
+      carpetBelow: carpetBelow || 'NA',
       amenities: amenities || 'NA',
       paymentSchedule: paymentSchedule || 'NA',
       additionalNotes: additionalNotes || 'NA',
@@ -88,14 +76,14 @@ export default function FollowUp() {
     };
 
     try {
-      const docRef = await addDoc(clientCollectionRef , newProperty);
+      const docRef = await addDoc(clientCollectionRef, newProperty);
       console.log(`Document added with ID: ${docRef.id}`);
       // Reset the form fields after submitting
-      setDate('');
+      setDate(new Date());
       setName('');
       setContact('');
-      setPriceBelow('');
       setPriceAbove('');
+      setPriceBelow('');
       setPropertyAddress('');
       setCarpetAbove('');
       setCarpetBelow('');
@@ -105,13 +93,16 @@ export default function FollowUp() {
       setValue(null);
     } catch (e) {
       console.error('Error adding document: ', e);
+      Alert.alert('Error', 'Failed to add document');
     }
   };
+
   return (
     <View>
       <KeyboardAvoidingView
         style={styles.keyboardAvoidingContainer}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
         <ScrollView contentContainerStyle={styles.scrollView}>
           <View style={styles.container}>
             <View style={styles.overlayer}>
@@ -120,7 +111,8 @@ export default function FollowUp() {
             </View>
             <TouchableOpacity
               style={styles.button}
-              onPress={() => navigation.goBack()}>
+              onPress={() => navigation.goBack()}
+            >
               <Text style={styles.text}>Back</Text>
             </TouchableOpacity>
           </View>
@@ -128,25 +120,22 @@ export default function FollowUp() {
             <Text style={styles.bgtext}>Enter the required Details</Text>
           </View>
           <View style={styles.formcontainer}>
-          <Dropdown
-      style={styles.input}
-      placeholderStyle={styles.placeholderStyle}
-      selectedTextStyle={styles.selectedTextStyle}
-      inputSearchStyle={styles.inputSearchStyle}
-      iconStyle={styles.iconStyle}
-      data={data}
-    //   search
-      maxHeight={300}
-      labelField="label"
-      valueField="value"
-      placeholder="Configuration"
-      searchPlaceholder="Search..."
-      value={value}
-      onChange={item => {
-        setValue(item.value);
-      }}
-    />
-          <View style={styles.datecontainer}>
+            <Dropdown
+              style={styles.input}
+              placeholderStyle={styles.placeholderStyle}
+              selectedTextStyle={styles.selectedTextStyle}
+              inputSearchStyle={styles.inputSearchStyle}
+              iconStyle={styles.iconStyle}
+              data={data}
+              maxHeight={300}
+              labelField="label"
+              valueField="value"
+              placeholder="Configuration"
+              searchPlaceholder="Search..."
+              value={value}
+              onChange={item => setValue(item.value)}
+            />
+            <View style={styles.datecontainer}>
               <View style={styles.dateContainer}>
                 <TextInput
                   style={styles.inputbtn}
@@ -169,74 +158,73 @@ export default function FollowUp() {
                 onCancel={() => setOpen(false)}
               />
             </View>
-          <TextInput
-            style={styles.input}
-            placeholder="Name"
-            value={name}
-            onChangeText={setName}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Contact"
-            value={contact}
-            onChangeText={setContact}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Price Above"
-            value={priceAbove}
-            onChangeText={setPriceAbove}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Price Below"
-            value={priceBelow}
-            onChangeText={setPriceBelow}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Property Address"
-            value={propertyAddress}
-            onChangeText={setPropertyAddress}
-          />
-          
-          <TextInput
-            style={styles.input}
-            placeholder="CarpetAbove"
-            value={CarpetAbove}
-            onChangeText={setCarpetAbove}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="CarpetBelow"
-            value={CarpetBelow}
-            onChangeText={setCarpetBelow}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Amenities"
-            value={amenities}
-            onChangeText={setAmenities}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Payment Schedule"
-            value={paymentSchedule}
-            onChangeText={setPaymentSchedule}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Additional Notes"
-            value={additionalNotes}
-            onChangeText={setAdditionalNotes}
-          />
-          <Button title="Submit" onPress={handleSubmit} />
-        </View>
+            <TextInput
+              style={styles.input}
+              placeholder="Name"
+              value={name}
+              onChangeText={setName}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Contact"
+              value={contact}
+              onChangeText={setContact}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Price Above"
+              value={priceAbove}
+              onChangeText={setPriceAbove}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Price Below"
+              value={priceBelow}
+              onChangeText={setPriceBelow}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Property Address"
+              value={propertyAddress}
+              onChangeText={setPropertyAddress}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Carpet Above"
+              value={carpetAbove}
+              onChangeText={setCarpetAbove}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Carpet Below"
+              value={carpetBelow}
+              onChangeText={setCarpetBelow}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Amenities"
+              value={amenities}
+              onChangeText={setAmenities}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Payment Schedule"
+              value={paymentSchedule}
+              onChangeText={setPaymentSchedule}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Additional Notes"
+              value={additionalNotes}
+              onChangeText={setAdditionalNotes}
+            />
+            <Button title="Submit" onPress={handleSubmit} />
+          </View>
         </ScrollView>
       </KeyboardAvoidingView>
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   text: {
@@ -265,7 +253,6 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontWeight: 'bold',
   },
-
   thetext: {
     fontSize: hp('2'),
     color: '#ffffff',
@@ -319,7 +306,7 @@ const styles = StyleSheet.create({
   },
   selectedTextStyle: {
     fontSize: 16,
-    color: 'black'
+    color: 'black',
   },
   iconStyle: {
     width: 20,
@@ -335,7 +322,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'gray',
     borderRadius: 5,
-    // padding: 10,
     paddingLeft: 8,
     paddingRight: 8,
     marginBottom: 10,
@@ -346,3 +332,5 @@ const styles = StyleSheet.create({
     color: 'black',
   },
 });
+
+export default FollowUp;
